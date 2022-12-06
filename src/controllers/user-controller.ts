@@ -19,6 +19,15 @@ export async function registerUser(email: string, password: string) {
   return user;
 }
 
+export async function deleteUser(id: string) {
+  // Delete user from database
+  const user = await User.findOne({
+    id: id
+  });
+  if (!user) return;
+  await user.delete();
+}
+
 export async function getUserById(id: string) {
   return await User.findOne({ id: id });
 }

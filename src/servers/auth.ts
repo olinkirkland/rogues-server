@@ -4,7 +4,11 @@ import dotenv from 'dotenv';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { addItem, ItemType } from '../controllers/resource-controller';
-import { getUserByEmail, registerUser } from '../controllers/user-controller';
+import {
+  deleteUser,
+  getUserByEmail,
+  registerUser
+} from '../controllers/user-controller';
 import { connectToDatabase } from '../database/database';
 import authenticate from '../middlewares/authenticate';
 import identify from '../middlewares/identify';
@@ -15,7 +19,10 @@ import { generateAccessToken, log } from '../util';
 dotenv.config();
 
 const app = express();
+
+log('\x1b[31m%s\x1b[0m', '============ SLOW MODE ON ============');
 app.use(lag);
+
 app.use(express.json());
 app.use(
   cors({
@@ -77,6 +84,10 @@ app.get('/logout', authenticate, identify, async (req, res) => {
   const user = req.user;
   if (!user) return res.status(401).send('User not found.');
 
+  // Find the refresh token by user id
+  const refreshToken = refreshTokens.find((t) => t.id === user.id);
+  if (!refreshToken) return res.status(401).send('Refresh token not found.');
+
   refreshTokens = refreshTokens.filter((t) => t.id !== user.id);
   log(`${user.email} logged out`);
   res.status(200).send('Logged out.');
@@ -104,6 +115,14 @@ app.post('/register', async (req, res) => {
     log(`Error registering user: ${err}`);
     res.status(500);
   }
+});
+
+app.delete('/delete', authenticate, identify, async (req, res) => {
+  const user = req.user;
+  if (!user) return res.status(401).send('User not found.');
+  deleteUser(user.id);
+  log(`${user.email} deleted their account`);
+  return res.status(200).send('Account deleted.');
 });
 
 app.listen(process.env.PORT, () => {
