@@ -6,25 +6,30 @@ import { getUserById } from '../controllers/user-controller';
 import { connectToDatabase } from '../database/database';
 import { toPublicUserData } from '../database/schemas/user';
 import authenticate from '../middlewares/authenticate';
-import meRoute from './routes/meRoute';
-import shopRoute from './routes/shopRoute';
+import lag from '../middlewares/lag';
+import { log } from '../util';
 
 dotenv.config();
 const app = express();
+
+log('\x1b[31m%s\x1b[0m', '============ SLOW MODE ON ============');
+app.use(lag);
+
 app.use(express.json());
 app.use(
   cors({
     origin: [
-      'http://localhost:4000',
-      'https://localhost:4000',
-      'http://84.166.18.6:4000'
+      'http://localhost:5173',
+      'https://localhost:5173',
+      'http://84.166.21.65:5173',
+      'https://84.166.21.65:5173'
     ],
     credentials: true
   })
 );
 
 connectToDatabase();
-startSocketServer(app);
+setTimeout(() => startSocketServer(app));
 
 app.get('/', (req, res) => {
   res.send(`Hello World! It's me, the main server.`);
@@ -37,10 +42,6 @@ app.get('/user/:id', authenticate, async (req, res) => {
   res.json(toPublicUserData(targetUser));
 });
 
-// app.listen(process.env.PORT, () => {
-//   return console.log(
-//     '💻',
-//     'Main server is listening on port',
-//     process.env.PORT
-//   );
-// });
+app.listen(process.env.MAIN_PORT, () => {
+  return log(`Main server is listening on port ${process.env.MAIN_PORT}`);
+});

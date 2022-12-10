@@ -19,9 +19,10 @@ export function startSocketServer(app) {
   const config = {
     cors: {
       origin: [
-        'http://localhost:4000',
-        'https://localhost:4000',
-        'http://84.166.18.6:4000'
+        'http://localhost:5173',
+        'https://localhost:5173',
+        'http://84.166.21.65:5173',
+        'https://84.166.21.65:5173'
       ],
       methods: ['GET', 'POST']
     }
@@ -30,30 +31,39 @@ export function startSocketServer(app) {
 
   io.on('connection', (socket) => {
     // Is socket authenticated?
-    console.log(socket.id, 'connected');
-
     const token: string = socket.handshake.query.token as string;
+    if (!token) return;
+
     jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, async (err, data) => {
+      if (err) return;
+      console.log(data);
       const id = data['id'];
       let user = await getUserById(id);
       if (!user) return;
+
       user.socket = socket.id;
       await user.save();
       sockets[socket.id] = socket;
 
-      // Subscribe to general-chat room
-      socket.join('general-chat');
+      console.log(
+        `🔌 User connected: ${socket.id} (${
+          Object.keys(sockets).length
+        } online)`
+      );
 
-      socket.on('chat', async (message) => {
-        // Broadcast the message, date, and user to the general-chat room
-        user = await getUserById(user.id);
-        console.log('💬', user.name, ': ', message);
-        io.to('general-chat').emit('chat', {
-          message: message,
-          time: new Date().getTime(),
-          user: toPublicUserData(user)
-        });
-      });
+      // Subscribe to general-chat room
+      // socket.join('general-chat');
+
+      // socket.on('chat', async (message) => {
+      //   // Broadcast the message, date, and user to the general-chat room
+      //   user = await getUserById(user.id);
+      //   console.log('💬', user.name, ': ', message);
+      //   io.to('general-chat').emit('chat', {
+      //     message: message,
+      //     time: new Date().getTime(),
+      //     user: toPublicUserData(user)
+      //   });
+      // });
 
       socket.on('disconnect', async () => {
         user = await getUserById(id);
@@ -67,8 +77,8 @@ export function startSocketServer(app) {
     });
   });
 
-  httpServer.listen(process.env.PORT, () => {
-    console.log('💻', 'Socket server is listening on port', process.env.PORT);
+  httpServer.listen(process.env.SOCKET_PORT, () => {
+    console.log('Socket server is listening on port', process.env.SOCKET_PORT);
   });
 
   startInvalidationInterval();

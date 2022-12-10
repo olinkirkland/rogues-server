@@ -1,3 +1,3 @@
 export default async function lag(req, res, next) {
-  setTimeout(next, 500);
+  setTimeout(next, 800);
 }

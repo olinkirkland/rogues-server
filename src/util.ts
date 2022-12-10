@@ -5,7 +5,7 @@ export function log(...args: any[]) {
 }
 
 export function generateGuestName(): string {
-  let name: string = 'User ';
+  let name: string = 'Anon_';
   for (let i = 0; i < 5; i++) name += Math.floor(Math.random() * 9);
   return name;
 }

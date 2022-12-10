@@ -13,10 +13,14 @@ export default model(
     },
     email: {
       type: String,
-      required: true
+      required: false
     },
     password: {
       type: String,
+      required: false
+    },
+    isRegistered: {
+      type: Boolean,
       required: true
     },
     verifyCode: {
@@ -64,7 +68,18 @@ export function toPublicUserData(user) {
 }
 
 export function toPersonalUserData(user) {
-  const propertiesToReturn = ['id', 'name', 'avatar', 'note', 'level', 'email', 'inventory', 'gold', 'experience', 'isVerified'];
+  const propertiesToReturn = [
+    'id',
+    'name',
+    'avatar',
+    'note',
+    'level',
+    'email',
+    'inventory',
+    'gold',
+    'experience',
+    'isVerified'
+  ];
   const publicUserData = {};
   propertiesToReturn.forEach((property) => {
     publicUserData[property] = user[property];
