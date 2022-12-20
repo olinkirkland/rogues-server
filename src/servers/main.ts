@@ -6,6 +6,7 @@ import { getUserById } from '../controllers/user-controller';
 import { connectToDatabase } from '../database/database';
 import { toPublicUserData } from '../database/schemas/user';
 import authenticate from '../middlewares/authenticate';
+import identify from '../middlewares/identify';
 import lag from '../middlewares/lag';
 import { log } from '../util';
 
@@ -40,6 +41,10 @@ app.get('/user/:id', authenticate, async (req, res) => {
   if (!targetUser) return res.status(404);
 
   res.json(toPublicUserData(targetUser));
+});
+
+app.get('/me', authenticate, identify, async (req, res) => {
+  res.json(toPublicUserData(req.user));
 });
 
 app.listen(process.env.MAIN_PORT, () => {

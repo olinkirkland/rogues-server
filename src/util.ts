@@ -4,8 +4,53 @@ export function log(...args: any[]) {
   console.log(...args);
 }
 
+const firstNames = [
+  'John',
+  'William',
+  'James',
+  'Mary',
+  'George',
+  'Joseph',
+  'Charles',
+  'Henry',
+  'Robert',
+  'Edward',
+  'Thomas',
+  'Anna',
+  'Frank',
+  'Margaret',
+  'Alice',
+  'Arthur',
+  'Florence',
+  'Elizabeth',
+  'Paul',
+  'Pauline',
+  'Emma',
+  'Clara',
+  'Annie',
+  'Harold',
+  'Lillian',
+  'Louis',
+  'Grace',
+  'Ethel',
+  'Martha',
+  'Fred',
+  'Bessie',
+  'Catherine',
+  'Hattie',
+  'Mabel',
+  'Jessie',
+  'Nellie',
+  'Ruth',
+  'Gertrude',
+  'Helen',
+  'Esther',
+  'Agnes',
+  'Edith',
+  'Edna'
+];
 export function generateGuestName(): string {
-  let name: string = 'Anon_';
+  let name: string = firstNames[Math.floor(Math.random() * firstNames.length)] + '-';
   for (let i = 0; i < 5; i++) name += Math.floor(Math.random() * 9);
   return name;
 }
