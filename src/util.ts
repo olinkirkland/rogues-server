@@ -1,5 +1,20 @@
 import jwt from 'jsonwebtoken';
 
+const ALLOWED_ORIGINS = [
+  'localhost',
+  '127.0.0.1',
+  '185.104.138.31',
+  '84.166.21.65'
+];
+export function getAllowedOrigins(): string[] {
+  let result = [];
+  for (const origin of ALLOWED_ORIGINS) {
+    result.push(`http://${origin}:5173`);
+    result.push(`https://${origin}:5173`);
+  }
+  return result;
+}
+
 export function log(...args: any[]) {
   console.log(...args);
 }
@@ -81,6 +96,7 @@ export function validateEnv(): Boolean {
     'AUTH_PORT',
     'SOCKET_PORT',
     'REFRESH_TOKEN_SECRET',
+    'ACCESS_TOKEN_SECRET',
     'DATABASE_URL'
   ];
   let missingProperties = [];

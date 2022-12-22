@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { Server, Socket } from 'socket.io';
 import { toPublicUserData } from '../database/schemas/user';
 import Signal from '../Signal';
+import { getAllowedOrigins } from '../util';
 import { getUserById } from './user-controller';
 
 const sockets = {};
@@ -18,12 +19,7 @@ export function startSocketServer(app) {
   const httpServer = createServer(app);
   const config = {
     cors: {
-      origin: [
-        'http://localhost:5173',
-        'https://localhost:5173',
-        'http://84.166.21.65:5173',
-        'https://84.166.21.65:5173'
-      ],
+      origin: getAllowedOrigins(),
       methods: ['GET', 'POST']
     }
   };

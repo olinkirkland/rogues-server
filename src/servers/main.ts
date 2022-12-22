@@ -8,7 +8,7 @@ import { toPublicUserData } from '../database/schemas/user';
 import authenticate from '../middlewares/authenticate';
 import identify from '../middlewares/identify';
 import lag from '../middlewares/lag';
-import { log, validateEnv } from '../util';
+import { getAllowedOrigins, log, validateEnv } from '../util';
 
 dotenv.config();
 if (!validateEnv()) {
@@ -23,12 +23,7 @@ app.use(lag);
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      'https://localhost:5173',
-      'http://84.166.21.65:5173',
-      'https://84.166.21.65:5173'
-    ],
+    origin: getAllowedOrigins(),
     credentials: true
   })
 );

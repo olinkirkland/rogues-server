@@ -15,13 +15,20 @@ import authenticate from '../middlewares/authenticate';
 import identify from '../middlewares/identify';
 
 import lag from '../middlewares/lag';
-import { generateAccessToken, log, validateEnv } from '../util';
+import {
+  generateAccessToken,
+  getAllowedOrigins,
+  log,
+  validateEnv
+} from '../util';
 
 dotenv.config();
 if (!validateEnv()) {
   // Exit application
   process.exit();
 }
+
+log(getAllowedOrigins());
 
 const app = express();
 
@@ -32,12 +39,7 @@ app.use(lag);
 app.use(express.json());
 app.use(
   cors({
-    origin: [
-      'http://localhost:5173',
-      'https://localhost:5173',
-      'http://84.166.21.65:5173',
-      'https://84.166.21.65:5173'
-    ],
+    origin: getAllowedOrigins(),
     credentials: true
   })
 );
