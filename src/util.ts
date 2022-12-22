@@ -4,6 +4,7 @@ export function log(...args: any[]) {
   console.log(...args);
 }
 
+// TODO move this to a json file
 const firstNames = [
   'John',
   'William',
@@ -50,7 +51,8 @@ const firstNames = [
   'Edna'
 ];
 export function generateGuestName(): string {
-  let name: string = firstNames[Math.floor(Math.random() * firstNames.length)] + '-';
+  let name: string =
+    firstNames[Math.floor(Math.random() * firstNames.length)] + '-';
   for (let i = 0; i < 5; i++) name += Math.floor(Math.random() * 9);
   return name;
 }
@@ -71,4 +73,43 @@ export function generateAccessToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
     expiresIn: '15m'
   });
+}
+
+export function validateEnv(): Boolean {
+  const requiredProperties = [
+    'MAIN_PORT',
+    'AUTH_PORT',
+    'SOCKET_PORT',
+    'REFRESH_TOKEN_SECRET',
+    'DATABASE_URL'
+  ];
+  let missingProperties = [];
+  requiredProperties.forEach((requiredProperty) => {
+    if (!process.env[requiredProperty])
+      missingProperties.push(requiredProperty);
+  });
+  if (missingProperties.length) {
+    log(
+      '\x1b[31m%s\x1b[0m',
+      'Missing .env properties: ' + missingProperties.join(', ')
+    );
+  } else {
+    log();
+    log(
+      '\x1b[36m%s\x1b[0m',
+      '============ ENVIRONMENT VARIABLES ============='
+    );
+    requiredProperties.forEach((key) => {
+      const value =
+        process.env[key].length > 24
+          ? '(too long to display)'
+          : process.env[key];
+      let separator = '';
+      for (let i = 0; i < 48 - key.length - value.length; i++) separator += '.';
+      log(key + separator + value);
+    });
+    log();
+  }
+
+  return !missingProperties.length;
 }

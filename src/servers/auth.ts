@@ -15,13 +15,18 @@ import authenticate from '../middlewares/authenticate';
 import identify from '../middlewares/identify';
 
 import lag from '../middlewares/lag';
-import { generateAccessToken, log } from '../util';
+import { generateAccessToken, log, validateEnv } from '../util';
 
 dotenv.config();
+if (!validateEnv()) {
+  // Exit application
+  process.exit();
+}
 
 const app = express();
 
-log('\x1b[31m%s\x1b[0m', '============ SLOW MODE ON ============');
+// Orange
+log('\x1b[33m%s\x1b[0m', '================= SLOW MODE ON =================');
 app.use(lag);
 
 app.use(express.json());
@@ -37,7 +42,14 @@ app.use(
   })
 );
 
-connectToDatabase();
+setTimeout(() => {
+  connectToDatabase().then((result) => {
+    if (!result) {
+      log('\x1b[31m%s\x1b[0m', 'Exiting...');
+      setTimeout(process.exit, 1000);
+    }
+  });
+});
 
 let refreshTokens: Array<{ id: string; token: string }> = [];
 

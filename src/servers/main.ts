@@ -3,17 +3,21 @@ import dotenv from 'dotenv';
 import express from 'express';
 import { startSocketServer } from '../controllers/socket-controller';
 import { getUserById } from '../controllers/user-controller';
-import { connectToDatabase } from '../database/database';
+import { connectToDatabase, returnAfterOneSecond } from '../database/database';
 import { toPublicUserData } from '../database/schemas/user';
 import authenticate from '../middlewares/authenticate';
 import identify from '../middlewares/identify';
 import lag from '../middlewares/lag';
-import { log } from '../util';
+import { log, validateEnv } from '../util';
 
 dotenv.config();
+if (!validateEnv()) {
+  // Exit
+}
+
 const app = express();
 
-log('\x1b[31m%s\x1b[0m', '============ SLOW MODE ON ============');
+log('\x1b[33m%s\x1b[0m', '================= SLOW MODE ON =================');
 app.use(lag);
 
 app.use(express.json());
@@ -29,8 +33,16 @@ app.use(
   })
 );
 
-connectToDatabase();
-setTimeout(() => startSocketServer(app));
+setTimeout(() => {
+  connectToDatabase().then((result) => {
+    if (!result) {
+      log('\x1b[31m%s\x1b[0m', 'Exiting...');
+      setTimeout(process.exit, 1000);
+    }
+
+    startSocketServer(app);
+  });
+});
 
 app.get('/', (req, res) => {
   res.send(`Hello World! It's me, the main server.`);
