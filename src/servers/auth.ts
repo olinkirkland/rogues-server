@@ -3,10 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { addItem, ItemType } from '../controllers/resource-controller';
 import {
-  createGuestUser,
   deleteUser,
+  generateUser,
   getUserByEmail,
   registerUser
 } from '../controllers/user-controller';
@@ -32,7 +31,6 @@ log(getAllowedOrigins());
 
 const app = express();
 
-// Orange
 log('\x1b[33m%s\x1b[0m', '================= SLOW MODE ON =================');
 app.use(lag);
 
@@ -73,20 +71,15 @@ app.post('/token', (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-  // If the email and password are both null, create a guest account
-  const isGuest = !(req.body.email && req.body.password);
-  const user = isGuest
-    ? await createGuestUser()
-    : await getUserByEmail(req.body.email);
+  if (!req.body.email || !req.body.password)
+    return res.status(401).send('Incorrect email or password.');
+  const user = await getUserByEmail(req.body.email);
 
   // If user is not found, return 401
   if (!user) return res.status(401).send('Incorrect email or password.');
 
   // Login with email and password combination (if registered)
-  if (
-    !isGuest &&
-    (!user || !(await bcrypt.compare(req.body.password, user.password)))
-  ) {
+  if (!user || !(await bcrypt.compare(req.body.password, user.password))) {
     res.status(401).send('Incorrect email or password.');
     return;
   }
@@ -101,9 +94,7 @@ app.post('/login', async (req, res) => {
   refreshTokens.push({ id: user.id, token: refreshToken });
 
   log(
-    `${
-      isGuest ? 'Guest' : user.email
-    } logged in with a token ending in ${refreshToken.slice(-5)}`
+    `${user.email} logged in with a token ending in ${refreshToken.slice(-5)}`
   );
 
   res.json({
@@ -126,8 +117,10 @@ app.get('/logout', authenticate, identify, async (req, res) => {
   res.status(200).send('Logged out.');
 });
 
-app.post('/register', authenticate, identify, async (req, res) => {
-  const user = req.user;
+app.post('/register', authenticate, async (req, res) => {
+  if (!req.body.email || !req.body.password)
+    return res.status(400).send('Email and password are required.');
+
   try {
     const email = req.body.email;
     const password = await bcrypt.hash(req.body.password, 10);
@@ -140,6 +133,7 @@ app.post('/register', authenticate, identify, async (req, res) => {
       return res.status(409).send(`The email ${email} is already registered.`);
     }
 
+    const user = generateUser();
     const isUserRegistered = await registerUser(user, email, password);
     log(
       `  ${email} was ${

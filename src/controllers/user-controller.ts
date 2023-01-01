@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import User from '../database/schemas/user';
-import { generateGuestName, generateVerifyCode } from '../util';
+import { generateDefaultName, generateVerifyCode } from '../util';
 
 export async function registerUser(user, email: string, password: string) {
   if (user.isRegistered) return false;
@@ -13,13 +13,13 @@ export async function registerUser(user, email: string, password: string) {
   return true;
 }
 
-export async function createGuestUser() {
+export async function generateUser() {
   const user = await new User({
     id: uuid(),
     email: null,
     password: null,
     isRegistered: false,
-    name: generateGuestName(),
+    name: generateDefaultName(),
     verifyCode: generateVerifyCode(),
     note: 'This user prefers to keep an air of mystery about them.',
     avatar: 'inmQ-K0Zd',
